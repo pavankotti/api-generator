@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { CopyIcon, CheckIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import GlobalApiLink from "@/components/global-api-link"
+import GlobalApiLink from "@/components/api/global-api-link"
 
 type ApiEndpoint = {
   method: string

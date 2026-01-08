@@ -1,6 +1,8 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { parseFile } from "@/lib/file-parser"
 import { createTable, insertData } from "@/lib/database"
+
+export const runtime = "nodejs"
 
 export async function POST(request: NextRequest) {
   try {
@@ -8,31 +10,34 @@ export async function POST(request: NextRequest) {
     const files = formData.getAll("files") as File[]
 
     if (!files || files.length === 0) {
-      return NextResponse.json({ success: false, message: "No files provided" }, { status: 400 })
+      return NextResponse.json(
+        { success: false, message: "No files provided" },
+        { status: 400 }
+      )
     }
 
-    const generatedApis = []
+    const generatedApis: any[] = []
 
-    // Process each file
+    // process files one by one (important for DB consistency)
     for (const file of files) {
-      // Parse the file to infer schema
+      // 1️⃣ parse excel / csv → schema
       const schema = await parseFile(file)
 
-      // Create table in database
-      createTable(schema.tableName, schema.columns)
+      // 2️⃣ create table (REAL DB CALL)
+      await createTable(schema.tableName, schema.columns)
 
-      // Insert sample data
+      // 3️⃣ insert sample data
       if (schema.sampleData.length > 0) {
-        insertData(schema.tableName, schema.sampleData)
+        await insertData(schema.tableName, schema.sampleData)
       }
 
-      // Generate API endpoints based on the schema
+      // 4️⃣ build public API metadata
       const baseUrl = `${request.nextUrl.protocol}//${request.nextUrl.host}`
       const tableName = schema.tableName
 
-      const api = {
+      generatedApis.push({
         fileName: file.name,
-        tableName: schema.tableName,
+        tableName,
         globalApiUrl: `${baseUrl}/api/data/${tableName}`,
         endpoints: [
           {
@@ -43,41 +48,38 @@ export async function POST(request: NextRequest) {
           {
             method: "GET",
             path: `/api/data/${tableName}/{id}`,
-            description: `Retrieve a single record from ${file.name} by ID`,
+            description: `Retrieve a single record by ID`,
           },
           {
             method: "POST",
             path: `/api/data/${tableName}`,
-            description: `Create a new record in ${file.name}`,
+            description: `Create a new record`,
           },
           {
             method: "PUT",
             path: `/api/data/${tableName}/{id}`,
-            description: `Update a record in ${file.name} by ID`,
+            description: `Update a record by ID`,
           },
           {
             method: "DELETE",
             path: `/api/data/${tableName}/{id}`,
-            description: `Delete a record from ${file.name} by ID`,
+            description: `Delete a record by ID`,
           },
         ],
         schema: {
           type: "object",
-          properties: schema.columns.reduce(
-            (acc, col) => {
-              acc[col.name] = {
-                type: col.type,
-                nullable: col.nullable,
-              }
-              return acc
-            },
-            {} as Record<string, any>,
-          ),
-          required: schema.columns.filter((col) => !col.nullable).map((col) => col.name),
+          properties: schema.columns.reduce((acc, col) => {
+            acc[col.name] = {
+              type: col.type,
+              nullable: col.nullable,
+            }
+            return acc
+          }, {} as Record<string, any>),
+          required: schema.columns
+            .filter((col) => !col.nullable)
+            .map((col) => col.name),
         },
-      }
-
-      generatedApis.push(api)
+      })
     }
 
     return NextResponse.json({
@@ -86,13 +88,17 @@ export async function POST(request: NextRequest) {
       apis: generatedApis,
     })
   } catch (error) {
-    console.error("Error processing upload:", error)
+    console.error("Upload error:", error)
+
     return NextResponse.json(
       {
         success: false,
-        message: error instanceof Error ? error.message : "Failed to process files",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Failed to process uploaded files",
       },
-      { status: 500 },
+      { status: 500 }
     )
   }
 }

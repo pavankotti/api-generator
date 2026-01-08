@@ -1,69 +1,100 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { getRecordById, updateRecord, deleteRecord } from "@/lib/database"
+import { NextRequest, NextResponse } from "next/server"
+import { requireApiKey } from "@/lib/auth"
+import {
+  getRecordById,
+  updateRecord,
+  deleteRecord,
+  listTables,
+} from "@/lib/database"
 
-export async function GET(request: NextRequest, { params }: { params: { table: string; id: string } }) {
-  try {
-    const table = decodeURIComponent(params.table)
-    const id = Number.parseInt(params.id)
+export const runtime = "nodejs"
 
-    const record = getRecordById(table, id)
-
-    if (!record) {
-      return NextResponse.json({ success: false, message: "Record not found" }, { status: 404 })
-    }
-
-    return NextResponse.json({
-      success: true,
-      data: record,
-    })
-  } catch (error) {
-    return NextResponse.json(
-      { success: false, message: error instanceof Error ? error.message : "Failed to fetch record" },
-      { status: 500 },
-    )
-  }
+async function isValidTable(table: string) {
+  const tables = await listTables()
+  return tables.includes(table)
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { table: string; id: string } }) {
-  try {
-    const table = decodeURIComponent(params.table)
-    const id = Number.parseInt(params.id)
-    const body = await request.json()
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { table: string; id: string } }
+) {
+  const { table, id } = params
 
-    const record = updateRecord(table, id, body)
-
-    return NextResponse.json({
-      success: true,
-      message: "Record updated successfully",
-      data: record,
-    })
-  } catch (error) {
+  if (!(await isValidTable(table))) {
     return NextResponse.json(
-      { success: false, message: error instanceof Error ? error.message : "Failed to update record" },
-      { status: 500 },
+      { error: "Invalid table" },
+      { status: 404 }
     )
   }
+
+  const apiKeyError = requireApiKey(req)
+  if (apiKeyError) return apiKeyError
+
+  const record = await getRecordById(table, Number(id))
+
+  if (!record) {
+    return NextResponse.json(
+      { error: "Not found" },
+      { status: 404 }
+    )
+  }
+
+  return NextResponse.json(record)
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { table: string; id: string } }) {
-  try {
-    const table = decodeURIComponent(params.table)
-    const id = Number.parseInt(params.id)
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: { table: string; id: string } }
+) {
+  const { table, id } = params
 
-    const deleted = deleteRecord(table, id)
-
-    if (!deleted) {
-      return NextResponse.json({ success: false, message: "Record not found" }, { status: 404 })
-    }
-
-    return NextResponse.json({
-      success: true,
-      message: "Record deleted successfully",
-    })
-  } catch (error) {
+  if (!(await isValidTable(table))) {
     return NextResponse.json(
-      { success: false, message: error instanceof Error ? error.message : "Failed to delete record" },
-      { status: 500 },
+      { error: "Invalid table" },
+      { status: 404 }
     )
   }
+
+  const apiKeyError = requireApiKey(req)
+  if (apiKeyError) return apiKeyError
+
+  const body = await req.json()
+  const updated = await updateRecord(table, Number(id), body)
+
+  if (!updated) {
+    return NextResponse.json(
+      { error: "Not found" },
+      { status: 404 }
+    )
+  }
+
+  return NextResponse.json(updated)
+}
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { table: string; id: string } }
+) {
+  const { table, id } = params
+
+  if (!(await isValidTable(table))) {
+    return NextResponse.json(
+      { error: "Invalid table" },
+      { status: 404 }
+    )
+  }
+
+  const apiKeyError = requireApiKey(req)
+  if (apiKeyError) return apiKeyError
+
+  const success = await deleteRecord(table, Number(id))
+
+  if (!success) {
+    return NextResponse.json(
+      { error: "Not found" },
+      { status: 404 }
+    )
+  }
+
+  return NextResponse.json({ success: true })
 }

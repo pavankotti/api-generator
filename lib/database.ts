@@ -1,132 +1,187 @@
+import { Pool } from "pg"
 import type { ColumnSchema } from "./file-parser"
 
-interface StoredRecord extends Record<string, any> {
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+})
+
+/* ---------------- helpers ---------------- */
+
+function pgType(type: string) {
+  if (type === "number") return "DOUBLE PRECISION"
+  if (type === "boolean") return "BOOLEAN"
+  if (type === "date") return "TIMESTAMP"
+  return "TEXT"
+}
+
+/* ---------------- schema ---------------- */
+
+export async function createTable(
+  table: string,
+  columns: ColumnSchema[]
+) {
+  const cols = columns
+    .map(
+      (c) =>
+        `"${c.name}" ${pgType(c.type)}${c.nullable ? "" : " NOT NULL"}`
+    )
+    .join(",")
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS "${table}" (
+      id SERIAL PRIMARY KEY,
+      ${cols}
+    )
+  `)
+}
+
+/* ---------------- inserts ---------------- */
+
+export async function insertData(
+  table: string,
+  rows: Record<string, any>[]
+) {
+  for (const row of rows) {
+    const keys = Object.keys(row)
+    if (!keys.length) continue
+
+    const values = Object.values(row)
+    const params = keys.map((_, i) => `$${i + 1}`).join(",")
+
+    await pool.query(
+      `INSERT INTO "${table}" (${keys.map(k => `"${k}"`).join(",")})
+       VALUES (${params})`,
+      values
+    )
+  }
+}
+
+/* ---------------- reads ---------------- */
+
+export async function getRecords(
+  table: string,
+  filters: Record<string, any> = {},
+  limit = 100,
+  offset = 0
+) {
+  const keys = Object.keys(filters)
+  const where = keys.length
+    ? "WHERE " + keys.map((k, i) => `"${k}" = $${i + 1}`).join(" AND ")
+    : ""
+
+  const values = Object.values(filters)
+
+  const { rows } = await pool.query(
+    `
+    SELECT *
+    FROM "${table}"
+    ${where}
+    ORDER BY id
+    LIMIT $${values.length + 1}
+    OFFSET $${values.length + 2}
+    `,
+    [...values, limit, offset]
+  )
+
+  return rows
+}
+
+export async function getRecordById(
+  table: string,
   id: number
+) {
+  const { rows } = await pool.query(
+    `SELECT * FROM "${table}" WHERE id = $1`,
+    [id]
+  )
+  return rows[0] ?? null
 }
 
-// In-memory database storage
-const databases: Map<string, StoredRecord[]> = new Map()
-let globalIdCounter = 1
+/* ---------------- writes ---------------- */
 
-// Reset database
-export function resetDatabase() {
-  databases.clear()
-  globalIdCounter = 1
+export async function createRecord(
+  table: string,
+  data: Record<string, any>
+) {
+  const keys = Object.keys(data)
+  const values = Object.values(data)
+  const params = keys.map((_, i) => `$${i + 1}`).join(",")
+
+  const { rows } = await pool.query(
+    `
+    INSERT INTO "${table}" (${keys.map(k => `"${k}"`).join(",")})
+    VALUES (${params})
+    RETURNING *
+    `,
+    values
+  )
+
+  return rows[0]
 }
 
-// Convert schema type to display type
-function getSqlType(columnType: string): string {
-  switch (columnType) {
-    case "number":
-      return "number"
-    case "boolean":
-      return "boolean"
-    case "date":
-      return "date"
-    case "string":
-    default:
-      return "string"
-  }
+export async function updateRecord(
+  table: string,
+  id: number,
+  data: Record<string, any>
+) {
+  const keys = Object.keys(data)
+  if (!keys.length) return null
+
+  const values = Object.values(data)
+  const set = keys.map((k, i) => `"${k}" = $${i + 1}`).join(",")
+
+  const { rows } = await pool.query(
+    `
+    UPDATE "${table}"
+    SET ${set}
+    WHERE id = $${keys.length + 1}
+    RETURNING *
+    `,
+    [...values, id]
+  )
+
+  return rows[0] ?? null
 }
 
-// Create table dynamically
-export function createTable(tableName: string, columns: ColumnSchema[]): void {
-  if (!databases.has(tableName)) {
-    databases.set(tableName, [])
-  }
+export async function deleteRecord(
+  table: string,
+  id: number
+) {
+  const res = await pool.query(
+    `DELETE FROM "${table}" WHERE id = $1`,
+    [id]
+  )
+  return res.rowCount === 1
 }
 
-// Insert data into table
-export function insertData(tableName: string, rows: Record<string, any>[]): void {
-  if (!databases.has(tableName)) {
-    databases.set(tableName, [])
-  }
+/* ---------------- metadata ---------------- */
 
-  const tableData = databases.get(tableName)!
-  rows.forEach((row) => {
-    const record: StoredRecord = {
-      ...row,
-      id: globalIdCounter++,
-    }
-    tableData.push(record)
-  })
+export async function listTables() {
+  const { rows } = await pool.query(`
+    SELECT tablename
+    FROM pg_tables
+    WHERE schemaname = 'public'
+  `)
+  return rows.map(r => r.tablename)
 }
 
-// Get all records from table
-export function getRecords(tableName: string, limit = 100, offset = 0): Record<string, any>[] {
-  const tableData = databases.get(tableName) || []
-  return tableData.slice(offset, offset + limit)
-}
+export async function getTableSchema(table: string) {
+  const { rows } = await pool.query(
+    `
+    SELECT column_name, data_type
+    FROM information_schema.columns
+    WHERE table_name = $1
+    `,
+    [table]
+  )
 
-// Get single record by ID
-export function getRecordById(tableName: string, id: number): Record<string, any> | null {
-  const tableData = databases.get(tableName) || []
-  return tableData.find((r) => r.id === id) || null
-}
+  if (!rows.length) return null
 
-// Create record
-export function createRecord(tableName: string, data: Record<string, any>): Record<string, any> {
-  if (!databases.has(tableName)) {
-    databases.set(tableName, [])
-  }
-
-  const tableData = databases.get(tableName)!
-  const record: StoredRecord = {
-    ...data,
-    id: globalIdCounter++,
-  }
-  tableData.push(record)
-  return record
-}
-
-// Update record
-export function updateRecord(tableName: string, id: number, data: Record<string, any>): Record<string, any> {
-  const tableData = databases.get(tableName) || []
-  const index = tableData.findIndex((r) => r.id === id)
-
-  if (index === -1) {
-    return {}
-  }
-
-  const updated = { ...tableData[index], ...data, id }
-  tableData[index] = updated
-  return updated
-}
-
-// Delete record
-export function deleteRecord(tableName: string, id: number): boolean {
-  const tableData = databases.get(tableName) || []
-  const index = tableData.findIndex((r) => r.id === id)
-
-  if (index === -1) {
-    return false
-  }
-
-  tableData.splice(index, 1)
-  return true
-}
-
-// Get table count
-export function getRecordCount(tableName: string): number {
-  return databases.get(tableName)?.length || 0
-}
-
-// List all tables
-export function listTables(): string[] {
-  return Array.from(databases.keys())
-}
-
-// Get table schema
-export function getTableSchema(tableName: string) {
-  const records = databases.get(tableName) || []
-  if (records.length === 0) return null
-
-  const firstRecord = records[0]
   return {
-    tableName,
-    columns: Object.keys(firstRecord).map((key) => ({
-      name: key,
-      type: typeof firstRecord[key],
+    tableName: table,
+    columns: rows.map(c => ({
+      name: c.column_name,
+      type: c.data_type,
     })),
   }
 }

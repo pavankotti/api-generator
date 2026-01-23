@@ -39,7 +39,7 @@ export async function GET(
   const filters: Record<string, any> = {}
 
   searchParams.forEach((value, key) => {
-    if (key !== "limit" && key !== "offset") {
+    if (key !== "limit" && key !== "offset" && key !== "apiKey") {
       filters[key] =
         value === "true" ? true :
         value === "false" ? false :

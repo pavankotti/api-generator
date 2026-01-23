@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 
 export function requireApiKey(req: NextRequest) {
-  const apiKey = req.headers.get("x-api-key")
+  const apiKey = req.headers.get("x-api-key") || new URL(req.url).searchParams.get("apiKey")
 
   if (!apiKey) {
     return NextResponse.json(

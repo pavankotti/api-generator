@@ -1,10 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { CopyIcon, CheckIcon, Globe } from "lucide-react"
+import { CopyIcon, CheckIcon, Globe, Play } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface GlobalApiLinkProps {
@@ -14,11 +14,38 @@ interface GlobalApiLinkProps {
 
 export default function GlobalApiLink({ apiUrl, fileName }: GlobalApiLinkProps) {
   const [copied, setCopied] = useState(false)
+  const [testResult, setTestResult] = useState<any>(null)
+  const [testing, setTesting] = useState(false)
+
+  const urlWithKey = useMemo(() => {
+    const apiKey = typeof window !== "undefined" ? localStorage.getItem("api_key") : ""
+    return apiKey ? `${apiUrl}?apiKey=${encodeURIComponent(apiKey)}` : apiUrl
+  }, [apiUrl])
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(apiUrl)
+    navigator.clipboard.writeText(urlWithKey)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  const testApi = async () => {
+    setTesting(true)
+    try {
+      const res = await fetch(urlWithKey)
+      const data = await res.json()
+      setTestResult({
+        status: res.status,
+        data: data,
+        success: res.ok,
+      })
+    } catch (error) {
+      setTestResult({
+        success: false,
+        error: (error as Error).message,
+      })
+    } finally {
+      setTesting(false)
+    }
   }
 
   return (
@@ -29,14 +56,14 @@ export default function GlobalApiLink({ apiUrl, fileName }: GlobalApiLinkProps) 
           <CardTitle className="text-lg">Global API Access</CardTitle>
         </div>
         <CardDescription>
-          Your data from <span className="font-medium">{fileName}</span> is now accessible via this global API URL
+          Your data from <span className="font-medium">{fileName}</span> is now accessible via this global API URL. Simply copy and paste into your browser or project.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4">
         <div className="flex space-x-2">
           <div className="relative flex-grow">
             <Input
-              value={apiUrl}
+              value={urlWithKey}
               readOnly
               className="pr-10 font-mono text-sm bg-muted/50"
               onClick={(e) => (e.target as HTMLInputElement).select()}
@@ -60,8 +87,32 @@ export default function GlobalApiLink({ apiUrl, fileName }: GlobalApiLinkProps) 
             )}
           </Button>
         </div>
-        <p className="text-xs text-muted-foreground mt-2">
-          Use this URL to access your API from any application or service
+        <Button
+          onClick={testApi}
+          disabled={testing}
+          variant="secondary"
+          size="sm"
+          className="w-full"
+        >
+          <Play className="h-4 w-4 mr-2" />
+          {testing ? "Testing..." : "Test API"}
+        </Button>
+        {testResult && (
+          <div className="p-3 rounded-md border bg-muted/30">
+            <p className="text-xs font-medium mb-2">
+              {testResult.success ? (
+                <span className="text-green-600">✓ Success ({testResult.status})</span>
+              ) : (
+                <span className="text-red-600">✗ Failed {testResult.status ? `(${testResult.status})` : ""}</span>
+              )}
+            </p>
+            <pre className="text-xs overflow-auto max-h-32">
+              {JSON.stringify(testResult.data || testResult.error, null, 2)}
+            </pre>
+          </div>
+        )}
+        <p className="text-xs text-muted-foreground">
+          API key is automatically included in the URL for easy sharing. Click "Test API" to verify access.
         </p>
       </CardContent>
     </Card>

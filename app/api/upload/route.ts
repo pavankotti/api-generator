@@ -20,18 +20,18 @@ export async function POST(request: NextRequest) {
 
     // process files one by one (important for DB consistency)
     for (const file of files) {
-      // 1️⃣ parse excel / csv → schema
+      // 1 parse excel / csv → schema
       const schema = await parseFile(file)
 
-      // 2️⃣ create table (REAL DB CALL)
+      // 2 create table (REAL DB CALL)
       await createTable(schema.tableName, schema.columns)
 
-      // 3️⃣ insert sample data
+      // 3 insert sample data
       if (schema.sampleData.length > 0) {
         await insertData(schema.tableName, schema.sampleData)
       }
 
-      // 4️⃣ build public API metadata
+      // 4 build public API metadata
       const baseUrl = `${request.nextUrl.protocol}//${request.nextUrl.host}`
       const tableName = schema.tableName
 

@@ -2,7 +2,11 @@ export const swaggerSpec = {
   openapi: "3.0.0",
   info: {
     title: "Instant API Generator",
-    description: "Upload CSV/Excel and get instant REST APIs",
+    description: 
+      "Documentation for your generated API.\n\n" +
+      "**Authentication:**\n" +
+      "- Use the `admin_key` for full access (Create, Update, Delete).\n" +
+      "- Use the `read_key` for read-only access (Get).",
     version: "1.0.0",
   },
   servers: [
@@ -15,8 +19,8 @@ export const swaggerSpec = {
     securitySchemes: {
       ApiKeyAuth: {
         type: "apiKey",
-        in: "header",
-        name: "x-api-key",
+        in: "query", // Changed to 'query' as it's easier for users (?apiKey=...)
+        name: "apiKey", // Matching your code usage
       },
     },
   },
@@ -24,7 +28,8 @@ export const swaggerSpec = {
   paths: {
     "/api/data/{table}": {
       get: {
-        summary: "Get all records",
+        summary: "Retrieve all records",
+        description: "Requires Read Key or Admin Key",
         parameters: [
           {
             name: "table",
@@ -32,6 +37,16 @@ export const swaggerSpec = {
             required: true,
             schema: { type: "string" },
           },
+          {
+            name: "limit",
+            in: "query",
+            schema: { type: "integer", default: 100 },
+          },
+          {
+            name: "offset",
+            in: "query",
+            schema: { type: "integer", default: 0 },
+          }
         ],
         responses: {
           200: { description: "List of records" },
@@ -39,6 +54,7 @@ export const swaggerSpec = {
       },
       post: {
         summary: "Create a record",
+        description: "**Requires Admin Key**",
         parameters: [
           {
             name: "table",
@@ -56,7 +72,8 @@ export const swaggerSpec = {
           },
         },
         responses: {
-          201: { description: "Created record" },
+          201: { description: "Record created" },
+          403: { description: "Forbidden: Read-only key used" }
         },
       },
     },
@@ -74,6 +91,7 @@ export const swaggerSpec = {
       },
       put: {
         summary: "Update record",
+        description: "**Requires Admin Key**",
         parameters: [
           { name: "table", in: "path", required: true },
           { name: "id", in: "path", required: true },
@@ -92,6 +110,7 @@ export const swaggerSpec = {
       },
       delete: {
         summary: "Delete record",
+        description: "**Requires Admin Key**",
         parameters: [
           { name: "table", in: "path", required: true },
           { name: "id", in: "path", required: true },
@@ -102,4 +121,4 @@ export const swaggerSpec = {
       },
     },
   },
-}
+};

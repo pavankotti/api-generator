@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,17 +10,16 @@ import { cn } from "@/lib/utils"
 interface GlobalApiLinkProps {
   apiUrl: string
   fileName: string
+  readKey: string // Changed to accept prop
 }
 
-export default function GlobalApiLink({ apiUrl, fileName }: GlobalApiLinkProps) {
+export default function GlobalApiLink({ apiUrl, fileName, readKey }: GlobalApiLinkProps) {
   const [copied, setCopied] = useState(false)
   const [testResult, setTestResult] = useState<any>(null)
   const [testing, setTesting] = useState(false)
 
-  const urlWithKey = useMemo(() => {
-    const apiKey = typeof window !== "undefined" ? localStorage.getItem("api_key") : ""
-    return apiKey ? `${apiUrl}?apiKey=${encodeURIComponent(apiKey)}` : apiUrl
-  }, [apiUrl])
+  // Construct URL correctly with the Read Key
+  const urlWithKey = `${apiUrl}?apiKey=${readKey}`;
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(urlWithKey)
@@ -30,9 +29,18 @@ export default function GlobalApiLink({ apiUrl, fileName }: GlobalApiLinkProps) 
 
   const testApi = async () => {
     setTesting(true)
+    setTestResult(null)
     try {
       const res = await fetch(urlWithKey)
-      const data = await res.json()
+      const text = await res.text()
+      
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        data = text;
+      }
+
       setTestResult({
         status: res.status,
         data: data,
@@ -49,14 +57,14 @@ export default function GlobalApiLink({ apiUrl, fileName }: GlobalApiLinkProps) 
   }
 
   return (
-    <Card className="border-primary/20">
+    <Card className="border-primary/20 shadow-sm">
       <CardHeader className="pb-3">
         <div className="flex items-center space-x-2">
           <Globe className="h-5 w-5 text-primary" />
           <CardTitle className="text-lg">Global API Access</CardTitle>
         </div>
         <CardDescription>
-          Your data from <span className="font-medium">{fileName}</span> is now accessible via this global API URL. Simply copy and paste into your browser or project.
+          Your data from <span className="font-medium">{fileName}</span> is now accessible via this global API URL.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -106,13 +114,13 @@ export default function GlobalApiLink({ apiUrl, fileName }: GlobalApiLinkProps) 
                 <span className="text-red-600">✗ Failed {testResult.status ? `(${testResult.status})` : ""}</span>
               )}
             </p>
-            <pre className="text-xs overflow-auto max-h-32">
+            <pre className="text-xs overflow-auto max-h-32 p-2 bg-background rounded border">
               {JSON.stringify(testResult.data || testResult.error, null, 2)}
             </pre>
           </div>
         )}
         <p className="text-xs text-muted-foreground">
-          API key is automatically included in the URL for easy sharing. Click "Test API" to verify access.
+          This URL includes your Read-Only API key for easy sharing.
         </p>
       </CardContent>
     </Card>

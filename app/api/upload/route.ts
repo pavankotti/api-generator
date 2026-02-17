@@ -1,104 +1,111 @@
-import { NextRequest, NextResponse } from "next/server"
-import { parseFile } from "@/lib/file-parser"
-import { createTable, insertData } from "@/lib/database"
+import { NextRequest, NextResponse } from "next/server";
+import { parseFile } from "@/lib/file-parser";
+import { createTable, insertData, saveApiMetadata } from "@/lib/database";
+import { v4 as uuidv4 } from "uuid";
 
-export const runtime = "nodejs"
+export const runtime = "nodejs";
+
+const generateKey = (prefix: string) => `${prefix}_${uuidv4().replace(/-/g, "")}`;
 
 export async function POST(request: NextRequest) {
   try {
-    const formData = await request.formData()
-    const files = formData.getAll("files") as File[]
+    const formData = await request.formData();
+    const files = formData.getAll("files") as File[];
 
     if (!files || files.length === 0) {
-      return NextResponse.json(
-        { success: false, message: "No files provided" },
-        { status: 400 }
-      )
+      return NextResponse.json({ success: false, message: "No files provided" }, { status: 400 });
     }
 
-    const generatedApis: any[] = []
+    const generatedApis: any[] = [];
 
-    // process files one by one (important for DB consistency)
     for (const file of files) {
-      // 1 parse excel / csv → schema
-      const schema = await parseFile(file)
+      // 1. Parse File
+      const schema = await parseFile(file);
 
-      // 2 create table (REAL DB CALL)
-      await createTable(schema.tableName, schema.columns)
+      // 2. Generate Identity & Keys
+      const uniqueId = uuidv4().split("-")[0];
+      const safeName = schema.tableName.replace(/[^a-zA-Z0-9]/g, "_").toLowerCase();
+      const realTableName = `user_${safeName}_${uniqueId}`;
+      
+      const adminKey = generateKey("sk"); // Secret Key
+      const readKey = generateKey("pk");  // Public Key
 
-      // 3 insert sample data
+      // 3. Database Operations
+      await createTable(realTableName, schema.columns);
       if (schema.sampleData.length > 0) {
-        await insertData(schema.tableName, schema.sampleData)
+        await insertData(realTableName, schema.sampleData);
       }
 
-      // 4 build public API metadata
-      const baseUrl = `${request.nextUrl.protocol}//${request.nextUrl.host}`
-      const tableName = schema.tableName
+      await saveApiMetadata({
+        id: uuidv4(),
+        originalName: file.name,
+        tableName: realTableName,
+        adminKey,
+        readKey,
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+      });
+
+      // 4. Construct Response (Bringing back 'endpoints' and 'schema')
+      const baseUrl = `${request.nextUrl.protocol}//${request.nextUrl.host}`;
+      const apiPath = `/api/data/${realTableName}`;
 
       generatedApis.push({
         fileName: file.name,
-        tableName,
-        globalApiUrl: `${baseUrl}/api/data/${tableName}`,
+        tableName: realTableName,
+        adminKey,
+        readKey,
+        globalApiUrl: `${baseUrl}${apiPath}`, // For the main link
+        
+        // FIX: The frontend needs this array to loop over!
         endpoints: [
           {
             method: "GET",
-            path: `/api/data/${tableName}`,
-            description: `Retrieve all records from ${file.name}`,
+            path: `${apiPath}?apiKey=${readKey}`,
+            description: "Retrieve all records (Read Only)",
           },
           {
             method: "GET",
-            path: `/api/data/${tableName}/{id}`,
-            description: `Retrieve a single record by ID`,
+            path: `${apiPath}/{id}?apiKey=${readKey}`,
+            description: "Retrieve a single record",
           },
           {
             method: "POST",
-            path: `/api/data/${tableName}`,
-            description: `Create a new record`,
+            path: `${apiPath}?apiKey=${adminKey}`,
+            description: "Create a new record (Admin Access)",
           },
           {
             method: "PUT",
-            path: `/api/data/${tableName}/{id}`,
-            description: `Update a record by ID`,
+            path: `${apiPath}/{id}?apiKey=${adminKey}`,
+            description: "Update a record (Admin Access)",
           },
           {
             method: "DELETE",
-            path: `/api/data/${tableName}/{id}`,
-            description: `Delete a record by ID`,
+            path: `${apiPath}/{id}?apiKey=${adminKey}`,
+            description: "Delete a record (Admin Access)",
           },
         ],
+
+        // FIX: The frontend needs this schema object!
         schema: {
           type: "object",
           properties: schema.columns.reduce((acc, col) => {
-            acc[col.name] = {
-              type: col.type,
-              nullable: col.nullable,
-            }
-            return acc
+            acc[col.name] = { type: col.type, nullable: col.nullable };
+            return acc;
           }, {} as Record<string, any>),
-          required: schema.columns
-            .filter((col) => !col.nullable)
-            .map((col) => col.name),
         },
-      })
+      });
     }
 
     return NextResponse.json({
       success: true,
-      message: "Files processed and APIs generated successfully",
       apis: generatedApis,
-    })
-  } catch (error) {
-    console.error("Upload error:", error)
+    });
 
+  } catch (error) {
+    console.error("Upload error:", error);
     return NextResponse.json(
-      {
-        success: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : "Failed to process uploaded files",
-      },
+      { success: false, message: error instanceof Error ? error.message : "Failed" },
       { status: 500 }
-    )
+    );
   }
 }

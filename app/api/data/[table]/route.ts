@@ -1,74 +1,71 @@
-import { NextRequest, NextResponse } from "next/server"
-import { requireApiKey } from "@/lib/auth"
-import {
-  getRecords,
-  createRecord,
-  listTables,
-} from "@/lib/database"
+import { NextRequest, NextResponse } from "next/server";
+import { getRecords, createRecord, getProjectByApiKey } from "@/lib/database";
 
-export const runtime = "nodejs"
+export const runtime = "nodejs";
 
-// simple table name validation (basic safety)
-async function isValidTable(table: string) {
-  const tables = await listTables()
-  return tables.includes(table)
-}
-export async function GET(
-  req: NextRequest,
-  context: { params: { table: string } }
-) {
-  const authError = requireApiKey(req)
-  if (authError) return authError
+// Helper to validate request
+async function validateRequest(req: NextRequest, tableParam: string, requireAdmin = false) {
+  // 1. Extract Key (Support Header 'x-api-key' OR Query param 'apiKey')
+  const apiKey = req.headers.get("x-api-key") || req.nextUrl.searchParams.get("apiKey");
 
-  const { table } = await context.params
-
-  const tables = await listTables()
-  if (!tables.includes(table)) {
-    return NextResponse.json(
-      { error: "Invalid table" },
-      { status: 404 }
-    )
+  if (!apiKey) {
+    return { error: "Missing API Key", status: 401 };
   }
 
-  const { searchParams } = new URL(req.url)
+  // 2. Lookup Project
+  const project = await getProjectByApiKey(apiKey);
 
-  const limit = Number(searchParams.get("limit") ?? 100)
-  const offset = Number(searchParams.get("offset") ?? 0)
+  if (!project) {
+    return { error: "Invalid API Key", status: 403 };
+  }
 
-  // everything else becomes a filter
-  const filters: Record<string, any> = {}
+  // 3. Security: Ensure Key Matches Table
+  // (Prevents using a key for "users" to access "orders")
+  if (project.table_name !== tableParam) {
+    return { error: "API Key does not match this resource", status: 403 };
+  }
 
-  searchParams.forEach((value, key) => {
-    if (key !== "limit" && key !== "offset" && key !== "apiKey") {
-      filters[key] =
-        value === "true" ? true :
-        value === "false" ? false :
-        isNaN(Number(value)) ? value : Number(value)
-    }
-  })
+  // 4. Permission Check
+  if (requireAdmin && apiKey !== project.admin_key) {
+    return { error: "Write permission denied. Use Admin Key.", status: 403 };
+  }
 
-  const data = await getRecords(table, filters, limit, offset)
-  return NextResponse.json(data)
+  return { success: true };
+}
+
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ table: string }> }
+) {
+  const { table } = await params;
+
+  // Validate (Read Access OK)
+  const validation = await validateRequest(req, table, false);
+  if (validation.error) return NextResponse.json({ error: validation.error }, { status: validation.status });
+
+  const { searchParams } = new URL(req.url);
+  const limit = Number(searchParams.get("limit") ?? 100);
+  const offset = Number(searchParams.get("offset") ?? 0);
+
+  const data = await getRecords(table, limit, offset);
+  return NextResponse.json(data);
 }
 
 export async function POST(
   req: NextRequest,
-  context: { params: Promise<{ table: string }> }
+  { params }: { params: Promise<{ table: string }> }
 ) {
-  const { table } = await context.params
+  const { table } = await params;
 
-  if (!(await isValidTable(table))) {
-    return NextResponse.json(
-      { error: "Invalid table" },
-      { status: 404 }
-    )
+  // Validate (Admin Access REQUIRED)
+  const validation = await validateRequest(req, table, true);
+  if (validation.error) return NextResponse.json({ error: validation.error }, { status: validation.status });
+
+  try {
+    const body = await req.json();
+    const record = await createRecord(table, body);
+    return NextResponse.json(record, { status: 201 });
+  } catch (err) {
+    return NextResponse.json({ error: "Failed to create record. Check data types." }, { status: 400 });
   }
-
-  const apiKeyError = requireApiKey(req)
-  if (apiKeyError) return apiKeyError
-
-  const body = await req.json()
-  const record = await createRecord(table, body)
-
-  return NextResponse.json(record, { status: 201 })
 }

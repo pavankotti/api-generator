@@ -1,14 +1,12 @@
 import FileUploader from "@/components/upload/file-uploader"
-import { ThemeToggle } from "@/components/theme/theme-toggle"
 import {
   Zap,
-  Upload,
-  BookOpen,
-  ChevronRight,
+  ArrowRight,
   Clock,
   Database,
   Shield,
   Code2,
+  CheckCircle2,
   ExternalLink,
   Store,
   GraduationCap,
@@ -16,272 +14,406 @@ import {
   Users,
 } from "lucide-react"
 
-const NAV_ITEMS = [
-  { icon: Upload, label: "New API", href: "#", active: true },
-  { icon: BookOpen, label: "API Docs", href: "/api/docs", external: true },
-]
-
-const SIDEBAR_STATS = [
-  { icon: Clock, value: "~30s", label: "Setup time" },
-  { icon: Shield, value: "Keyed", label: "Auth" },
-  { icon: Database, value: "CRUD", label: "Operations" },
-  { icon: Code2, value: "REST", label: "Protocol" },
+const FEATURES = [
+  {
+    icon: Clock,
+    title: "30-Second Setup",
+    desc: "From file upload to live API endpoint in under a minute — no config, no friction.",
+    glow: "rgba(139,92,246,0.15)",
+    border: "rgba(139,92,246,0.25)",
+  },
+  {
+    icon: Shield,
+    title: "API Key Auth",
+    desc: "Separate admin and read-only keys generated automatically for every API.",
+    glow: "rgba(59,130,246,0.15)",
+    border: "rgba(59,130,246,0.25)",
+  },
+  {
+    icon: Database,
+    title: "Auto Schema",
+    desc: "Column types (text, number, date, boolean) are inferred automatically from your data.",
+    glow: "rgba(16,185,129,0.12)",
+    border: "rgba(16,185,129,0.22)",
+  },
+  {
+    icon: Code2,
+    title: "Full CRUD",
+    desc: "GET, POST, PUT, DELETE — all REST endpoints ready, with filtering and pagination.",
+    glow: "rgba(245,158,11,0.12)",
+    border: "rgba(245,158,11,0.22)",
+  },
 ]
 
 const USE_CASES = [
   {
     icon: Store,
-    audience: "Small Business",
-    title: "Product catalog → live API",
-    description: "Turn your Excel product list into a Webflow / Shopify data source — no backend needed.",
-    accent: "blue",
+    label: "Small Business",
+    headline: "Product catalog → live API",
+    body: "Turn Excel product lists into a Webflow / Shopify data source with zero backend.",
   },
   {
-    icon: Code2,
-    audience: "No-Code Builders",
-    title: "Spreadsheet → Bubble/Glide data source",
-    description: "Feed data from Excel into Bubble, Glide, or FlutterFlow without writing a line of code.",
-    accent: "purple",
+    icon: Users,
+    label: "No-Code Builders",
+    headline: "Spreadsheet → Bubble / Glide",
+    body: "Feed data from Excel into Bubble, Glide, or FlutterFlow without writing any code.",
   },
   {
     icon: GraduationCap,
-    audience: "Students & Devs",
-    title: "Instant mock API for projects",
-    description: "Need fake data for a demo? Upload a sample CSV and get a working endpoint in 30 seconds.",
-    accent: "emerald",
+    label: "Students & Devs",
+    headline: "Instant mock API for demos",
+    body: "Upload a sample CSV, get a working endpoint in 30 seconds — skip writing a backend.",
   },
   {
     icon: BarChart3,
-    audience: "Data Teams",
-    title: "Share data without sharing raw files",
-    description: "Expose controlled read-only access to your spreadsheet data via a secure API key.",
-    accent: "amber",
+    label: "Data Teams",
+    headline: "Share data without raw files",
+    body: "Give teams secure read-only API access to your spreadsheet — keys, not attachments.",
   },
 ]
 
-const accentClasses: Record<string, { card: string; icon: string; badge: string }> = {
-  blue: {
-    card: "border-blue-200/60 dark:border-blue-900/40 bg-blue-50/50 dark:bg-blue-950/20",
-    icon: "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400",
-    badge: "text-blue-600 dark:text-blue-400",
-  },
-  purple: {
-    card: "border-purple-200/60 dark:border-purple-900/40 bg-purple-50/50 dark:bg-purple-950/20",
-    icon: "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400",
-    badge: "text-purple-600 dark:text-purple-400",
-  },
-  emerald: {
-    card: "border-emerald-200/60 dark:border-emerald-900/40 bg-emerald-50/50 dark:bg-emerald-950/20",
-    icon: "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400",
-    badge: "text-emerald-600 dark:text-emerald-400",
-  },
-  amber: {
-    card: "border-amber-200/60 dark:border-amber-900/40 bg-amber-50/50 dark:bg-amber-950/20",
-    icon: "bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400",
-    badge: "text-amber-600 dark:text-amber-400",
-  },
-}
+const STATS = [
+  { value: "~30s", label: "to live API" },
+  { value: "4", label: "CRUD endpoints" },
+  { value: "100%", label: "no-code" },
+  { value: "24h", label: "data TTL" },
+]
 
 export default function Home() {
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div
+      className="min-h-screen text-white antialiased"
+      style={{ background: "#080a12" }}
+    >
+      {/* ─── Background orbs ─────────────────────────────── */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+        <div
+          className="absolute -top-40 -left-40 w-[700px] h-[700px] rounded-full blur-[120px] opacity-30"
+          style={{ background: "radial-gradient(circle, #7c3aed 0%, transparent 70%)" }}
+        />
+        <div
+          className="absolute top-1/3 -right-60 w-[600px] h-[600px] rounded-full blur-[100px] opacity-20"
+          style={{ background: "radial-gradient(circle, #2563eb 0%, transparent 70%)" }}
+        />
+        <div
+          className="absolute bottom-0 left-1/3 w-[500px] h-[500px] rounded-full blur-[120px] opacity-15"
+          style={{ background: "radial-gradient(circle, #8b5cf6 0%, transparent 70%)" }}
+        />
+        {/* Dot grid */}
+        <div className="absolute inset-0 dot-grid opacity-40" />
+      </div>
 
-      {/* ── Sidebar ─────────────────────────────────────── */}
-      <aside className="app-sidebar w-64 shrink-0 flex flex-col border-r">
-        {/* Brand */}
-        <div className="h-14 flex items-center gap-2.5 px-5 border-b border-white/10 shrink-0">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-600 shadow-lg shadow-blue-900/40">
-            <Zap className="h-4.5 w-4.5 text-white" />
-          </div>
-          <div>
-            <p className="text-[13px] font-semibold leading-none text-white">API Generator</p>
-            <p className="text-[10px] text-white/40 mt-0.5 leading-none">CSV / Excel → REST</p>
-          </div>
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-          <p className="text-[10px] font-semibold text-white/25 uppercase tracking-[0.12em] px-2 pb-2">
-            Workspace
-          </p>
-          {NAV_ITEMS.map(({ icon: Icon, label, href, active, external }) => (
-            <a
-              key={label}
-              href={href}
-              target={external ? "_blank" : undefined}
-              rel={external ? "noopener noreferrer" : undefined}
-              className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium transition-all ${
-                active
-                  ? "bg-white/10 text-white shadow-sm"
-                  : "text-white/50 hover:bg-white/6 hover:text-white/90"
-              }`}
+      {/* ─── Navbar ──────────────────────────────────────── */}
+      <header
+        className="sticky top-0 z-50 border-b"
+        style={{ background: "rgba(8,10,18,0.8)", borderColor: "rgba(255,255,255,0.07)", backdropFilter: "blur(20px)" }}
+      >
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 h-14 flex items-center justify-between">
+          {/* Logo */}
+          <div className="flex items-center gap-2.5">
+            <div
+              className="flex h-8 w-8 items-center justify-center rounded-xl"
+              style={{ background: "linear-gradient(135deg, #7c3aed, #3b82f6)" }}
             >
-              <Icon className="h-4 w-4 shrink-0" />
-              <span className="flex-1">{label}</span>
-              {external && <ExternalLink className="h-3 w-3 opacity-50" />}
-              {active && <span className="h-1.5 w-1.5 rounded-full bg-blue-400" />}
-            </a>
-          ))}
-        </nav>
-
-        {/* Stats grid */}
-        <div className="px-3 pb-3 space-y-3 shrink-0">
-          <div className="rounded-xl border border-white/10 bg-white/5 p-3">
-            <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[0.1em] mb-2.5">Quick Stats</p>
-            <div className="grid grid-cols-2 gap-1.5">
-              {SIDEBAR_STATS.map(({ icon: Icon, value, label }) => (
-                <div key={label} className="rounded-lg bg-white/5 border border-white/8 p-2 text-center">
-                  <Icon className="h-3.5 w-3.5 text-white/40 mx-auto mb-1" />
-                  <p className="text-xs font-bold text-white leading-none">{value}</p>
-                  <p className="text-[10px] text-white/35 mt-0.5">{label}</p>
-                </div>
-              ))}
+              <Zap className="h-4 w-4 text-white" />
             </div>
+            <span className="font-bold text-[15px] tracking-tight">API Generator</span>
           </div>
 
-          {/* Footer strip */}
-          <div className="flex items-center justify-between px-1">
-            <p className="text-[10px] text-white/25">Data expires in 24h</p>
-            <ThemeToggle />
-          </div>
-        </div>
-      </aside>
-
-      {/* ── Main area ───────────────────────────────────── */}
-      <div className="flex-1 flex flex-col min-w-0">
-
-        {/* Top header */}
-        <header className="h-14 flex items-center gap-2 px-6 border-b bg-background/95 backdrop-blur shrink-0">
-          <nav className="flex items-center gap-1 text-sm text-muted-foreground" aria-label="Breadcrumb">
-            <span>Workspace</span>
-            <ChevronRight className="h-3.5 w-3.5" />
-            <span className="text-foreground font-medium">New API</span>
-          </nav>
-          <div className="ml-auto flex items-center gap-3">
-            <span className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              Live
-            </span>
+          {/* Right links */}
+          <div className="flex items-center gap-5">
+            <a
+              href="#upload"
+              className="hidden sm:block text-sm font-medium text-white/50 hover:text-white transition-colors"
+            >
+              Upload
+            </a>
             <a
               href="/api/docs"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              className="hidden sm:flex items-center gap-1 text-sm font-medium text-white/50 hover:text-white transition-colors"
             >
               API Docs <ExternalLink className="h-3 w-3" />
             </a>
+            <a
+              href="#upload"
+              className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-lg transition-all"
+              style={{ background: "linear-gradient(135deg, #7c3aed, #4f46e5)", boxShadow: "0 0 20px rgba(124,58,237,0.35)" }}
+            >
+              Get Started <ArrowRight className="h-3.5 w-3.5" />
+            </a>
           </div>
-        </header>
+        </div>
+      </header>
 
-        {/* Scrollable content */}
-        <main className="flex-1 overflow-y-auto bg-muted/20">
-          <div className="max-w-4xl mx-auto px-6 py-8 space-y-10">
+      {/* ─── Hero ────────────────────────────────────────── */}
+      <section className="relative pt-24 pb-20 text-center overflow-hidden">
+        <div className="max-w-4xl mx-auto px-5 sm:px-8">
+          {/* Badge */}
+          <div
+            className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold mb-8"
+            style={{ background: "rgba(124,58,237,0.15)", border: "1px solid rgba(139,92,246,0.3)", color: "#a78bfa" }}
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-violet-400 animate-pulse" />
+            Instant REST API from any spreadsheet
+          </div>
 
-            {/* Page title + description */}
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h1 className="text-2xl font-bold tracking-tight">Create a New API</h1>
-                <p className="text-muted-foreground text-sm mt-1.5 max-w-lg">
-                  Upload a <span className="font-medium text-foreground">CSV</span> or{" "}
-                  <span className="font-medium text-foreground">Excel</span> file to instantly generate a
-                  fully-featured REST API with CRUD endpoints — no backend or coding required.
+          {/* Headline */}
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tighter leading-[1.04] mb-6">
+            <span className="text-white">Your spreadsheet,</span>
+            <br />
+            <span
+              className="text-gradient"
+              style={{ backgroundImage: "linear-gradient(135deg, #a78bfa 0%, #60a5fa 50%, #34d399 100%)" }}
+            >
+              now a live API.
+            </span>
+          </h1>
+
+          {/* Sub */}
+          <p className="text-lg sm:text-xl text-white/50 max-w-2xl mx-auto leading-relaxed mb-10">
+            Upload a CSV or Excel file and get a fully-functional REST API with CRUD endpoints in seconds.
+            No backend. No database. No code.
+          </p>
+
+          {/* CTA row */}
+          <div className="flex items-center justify-center gap-4 flex-wrap mb-12">
+            <a
+              href="#upload"
+              className="inline-flex items-center gap-2 text-sm font-bold px-7 py-3.5 rounded-xl transition-all hover:scale-105"
+              style={{
+                background: "linear-gradient(135deg, #7c3aed, #4f46e5)",
+                boxShadow: "0 0 30px rgba(124,58,237,0.4), 0 0 60px rgba(124,58,237,0.15)",
+              }}
+            >
+              Start for free <ArrowRight className="h-4 w-4" />
+            </a>
+            <a
+              href="/api/docs"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-white/50 hover:text-white transition-colors"
+            >
+              View API docs <ExternalLink className="h-4 w-4" />
+            </a>
+          </div>
+
+          {/* Trust badges */}
+          <div className="flex items-center justify-center gap-6 flex-wrap text-xs text-white/35">
+            {["No credit card", "Works with .csv & .xlsx", "API keys included"].map((t) => (
+              <span key={t} className="flex items-center gap-1.5">
+                <CheckCircle2 className="h-3.5 w-3.5 text-violet-400" />
+                {t}
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── Stats strip ─────────────────────────────────── */}
+      <section
+        className="relative border-y"
+        style={{ borderColor: "rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.025)" }}
+      >
+        <div className="max-w-4xl mx-auto px-5 sm:px-8 py-8">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
+            {STATS.map(({ value, label }) => (
+              <div key={label}>
+                <p
+                  className="text-3xl font-black tracking-tight text-gradient"
+                  style={{ backgroundImage: "linear-gradient(135deg, #a78bfa, #60a5fa)" }}
+                >
+                  {value}
                 </p>
+                <p className="text-xs text-white/40 mt-1">{label}</p>
               </div>
-              <div className="hidden sm:flex items-center gap-1.5 rounded-full border bg-background px-3 py-1.5 text-xs text-muted-foreground shadow-sm shrink-0">
-                <Clock className="h-3 w-3 text-primary" />
-                Ready in ~30 seconds
-              </div>
-            </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-            {/* ── Upload wizard ─────────────────────── */}
-            <div className="rounded-2xl border bg-background shadow-sm">
-              <div className="px-6 py-5 border-b">
-                <h2 className="text-sm font-semibold">Upload & Configure</h2>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Step through upload → preview → generated API
-                </p>
-              </div>
-              <div className="px-6 py-6">
-                <FileUploader />
-              </div>
-            </div>
+      {/* ─── Upload wizard ───────────────────────────────── */}
+      <section id="upload" className="relative py-20">
+        <div className="max-w-4xl mx-auto px-5 sm:px-8">
+          {/* Section label */}
+          <div className="text-center mb-10">
+            <p
+              className="inline-block text-xs font-bold uppercase tracking-[0.15em] px-3 py-1 rounded-full mb-4"
+              style={{ color: "#a78bfa", background: "rgba(124,58,237,0.12)", border: "1px solid rgba(139,92,246,0.2)" }}
+            >
+              Upload & Generate
+            </p>
+            <h2 className="text-3xl sm:text-4xl font-black tracking-tighter text-white">
+              Three steps to your API
+            </h2>
+            <p className="text-white/40 text-sm mt-2">Upload → Preview → Live endpoint</p>
+          </div>
 
-            {/* ── Use-case cards ────────────────────── */}
-            <section>
-              <div className="mb-5">
-                <h2 className="text-base font-semibold tracking-tight">Who is this for?</h2>
-                <p className="text-sm text-muted-foreground mt-0.5">Common workflows powered by API Generator</p>
-              </div>
-              <div className="grid sm:grid-cols-2 gap-4">
-                {USE_CASES.map(({ icon: Icon, audience, title, description, accent }) => {
-                  const cls = accentClasses[accent]
-                  return (
-                    <div
-                      key={audience}
-                      className={`rounded-xl border p-4 space-y-2.5 hover:shadow-sm transition-shadow ${cls.card}`}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${cls.icon}`}>
-                          <Icon className="h-4 w-4" />
-                        </div>
-                        <span className={`text-[11px] font-semibold uppercase tracking-wide ${cls.badge}`}>{audience}</span>
-                      </div>
-                      <p className="font-medium text-sm leading-snug">{title}</p>
-                      <p className="text-xs text-muted-foreground leading-relaxed">{description}</p>
-                    </div>
-                  )
-                })}
-              </div>
-            </section>
+          {/* Glass card wrapper */}
+          <div
+            className="rounded-2xl p-6 sm:p-8"
+            style={{
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              backdropFilter: "blur(20px)",
+              boxShadow: "0 0 60px rgba(124,58,237,0.08), inset 0 1px 0 rgba(255,255,255,0.06)",
+            }}
+          >
+            <FileUploader />
+          </div>
+        </div>
+      </section>
 
-            {/* ── Before / After ────────────────────── */}
-            <section>
-              <div className="mb-5">
-                <h2 className="text-base font-semibold tracking-tight">Why use API Generator?</h2>
-                <p className="text-sm text-muted-foreground mt-0.5">Before & after comparison</p>
-              </div>
-              <div className="rounded-xl border overflow-hidden bg-background shadow-sm">
-                <div className="grid grid-cols-2 divide-x">
-                  <div className="px-5 py-2.5 bg-red-50 dark:bg-red-950/20">
-                    <span className="text-xs font-semibold text-red-600 dark:text-red-400">❌ Without</span>
-                  </div>
-                  <div className="px-5 py-2.5 bg-emerald-50 dark:bg-emerald-950/20">
-                    <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">✅ With API Generator</span>
-                  </div>
+      {/* ─── Features ────────────────────────────────────── */}
+      <section className="relative py-20">
+        <div className="max-w-5xl mx-auto px-5 sm:px-8">
+          <div className="text-center mb-12">
+            <p
+              className="inline-block text-xs font-bold uppercase tracking-[0.15em] px-3 py-1 rounded-full mb-4"
+              style={{ color: "#60a5fa", background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.2)" }}
+            >
+              Features
+            </p>
+            <h2 className="text-3xl sm:text-4xl font-black tracking-tighter text-white">
+              Everything you need
+            </h2>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {FEATURES.map(({ icon: Icon, title, desc, glow, border }) => (
+              <div
+                key={title}
+                className="rounded-2xl p-5 space-y-3 transition-all duration-300 hover:-translate-y-1"
+                style={{
+                  background: `radial-gradient(circle at top left, ${glow}, rgba(255,255,255,0.02))`,
+                  border: `1px solid ${border}`,
+                  boxShadow: `0 0 30px ${glow}`,
+                }}
+              >
+                <div
+                  className="flex h-10 w-10 items-center justify-center rounded-xl"
+                  style={{ background: glow, border: `1px solid ${border}` }}
+                >
+                  <Icon className="h-5 w-5 text-white/80" />
                 </div>
-                {[
-                  { without: "Hire a developer for ₹20,000", with: "Upload CSV, get API in 30 seconds" },
-                  { without: "Learn Node.js / Python", with: "No coding needed" },
-                  { without: "Wait 2 weeks for backend", with: "Live in 30 seconds" },
-                  { without: "Pay monthly for a database", with: "Use Excel you already have" },
-                ].map((row, i) => (
-                  <div key={i} className="grid grid-cols-2 divide-x border-t">
-                    <div className="px-5 py-3 flex items-center gap-2 text-xs text-muted-foreground">
-                      <span className="text-red-400 shrink-0">✗</span>
-                      {row.without}
-                    </div>
-                    <div className="px-5 py-3 flex items-center gap-2 text-xs font-medium">
-                      <span className="text-emerald-500 shrink-0">✓</span>
-                      {row.with}
-                    </div>
-                  </div>
-                ))}
+                <h3 className="font-bold text-sm text-white">{title}</h3>
+                <p className="text-xs text-white/40 leading-relaxed">{desc}</p>
               </div>
-            </section>
-
-            {/* ── Footer ────────────────────────────── */}
-            <footer className="pb-2 flex items-center justify-between text-[11px] text-muted-foreground">
-              <span>© API Generator</span>
-              <div className="flex items-center gap-3">
-                <span>Data expires after 24 hours</span>
-                <a href="/api/docs" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors underline underline-offset-2">
-                  API Docs
-                </a>
-              </div>
-            </footer>
+            ))}
           </div>
-        </main>
-      </div>
+        </div>
+      </section>
+
+      {/* ─── Use cases ───────────────────────────────────── */}
+      <section
+        className="relative py-20 border-t"
+        style={{ borderColor: "rgba(255,255,255,0.05)", background: "rgba(255,255,255,0.015)" }}
+      >
+        <div className="max-w-5xl mx-auto px-5 sm:px-8">
+          <div className="text-center mb-12">
+            <p
+              className="inline-block text-xs font-bold uppercase tracking-[0.15em] px-3 py-1 rounded-full mb-4"
+              style={{ color: "#34d399", background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.2)" }}
+            >
+              Who is this for?
+            </p>
+            <h2 className="text-3xl sm:text-4xl font-black tracking-tighter text-white">
+              Built for everyone with data
+            </h2>
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-5">
+            {USE_CASES.map(({ icon: Icon, label, headline, body }) => (
+              <div
+                key={label}
+                className="rounded-2xl p-5 space-y-3 transition-all duration-300 hover:-translate-y-0.5"
+                style={{
+                  background: "rgba(255,255,255,0.03)",
+                  border: "1px solid rgba(255,255,255,0.07)",
+                }}
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className="flex h-9 w-9 items-center justify-center rounded-xl shrink-0"
+                    style={{ background: "rgba(139,92,246,0.15)", border: "1px solid rgba(139,92,246,0.25)" }}
+                  >
+                    <Icon className="h-4 w-4 text-violet-400" />
+                  </div>
+                  <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-violet-400/70">{label}</span>
+                </div>
+                <p className="font-semibold text-sm text-white leading-snug">{headline}</p>
+                <p className="text-xs text-white/40 leading-relaxed">{body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── CTA Banner ──────────────────────────────────── */}
+      <section className="relative py-20">
+        <div className="max-w-3xl mx-auto px-5 sm:px-8 text-center">
+          <div
+            className="rounded-3xl p-10 sm:p-14 relative overflow-hidden"
+            style={{
+              background: "linear-gradient(135deg, rgba(124,58,237,0.2), rgba(79,70,229,0.15))",
+              border: "1px solid rgba(139,92,246,0.25)",
+              boxShadow: "0 0 80px rgba(124,58,237,0.12)",
+            }}
+          >
+            {/* Glow inside card */}
+            <div
+              className="absolute inset-0 rounded-3xl pointer-events-none"
+              style={{ background: "radial-gradient(circle at 50% 0%, rgba(124,58,237,0.2) 0%, transparent 60%)" }}
+            />
+            <h2 className="text-3xl sm:text-4xl font-black tracking-tighter text-white relative mb-4">
+              Ready to build your API?
+            </h2>
+            <p className="text-white/50 text-base mb-8 relative">
+              Upload your spreadsheet and get a live API in under a minute. Completely free.
+            </p>
+            <a
+              href="#upload"
+              className="inline-flex items-center gap-2 text-sm font-bold px-8 py-3.5 rounded-xl relative transition-all hover:scale-105"
+              style={{
+                background: "linear-gradient(135deg, #7c3aed, #4f46e5)",
+                boxShadow: "0 0 30px rgba(124,58,237,0.5)",
+              }}
+            >
+              Get Started Free <ArrowRight className="h-4 w-4" />
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── Footer ──────────────────────────────────────── */}
+      <footer
+        className="border-t py-8"
+        style={{ borderColor: "rgba(255,255,255,0.06)", background: "rgba(0,0,0,0.2)" }}
+      >
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 flex items-center justify-between flex-wrap gap-4 text-xs text-white/25">
+          <div className="flex items-center gap-2">
+            <div
+              className="flex h-5 w-5 items-center justify-center rounded"
+              style={{ background: "linear-gradient(135deg, #7c3aed, #3b82f6)" }}
+            >
+              <Zap className="h-3 w-3 text-white" />
+            </div>
+            <span className="font-semibold text-white/50">API Generator</span>
+          </div>
+          <div className="flex items-center gap-5">
+            <span>Data expires after 24 hours</span>
+            <a
+              href="/api/docs"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white/70 transition-colors underline underline-offset-2"
+            >
+              API Docs
+            </a>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }

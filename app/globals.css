@@ -8,6 +8,13 @@
   }
 }
 
+/* App sidebar – always dark regardless of theme */
+.app-sidebar {
+  background-color: #0e1629;
+  color: white;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
 @layer base {
   :root {
     --font-sans: var(--font-geist-sans);

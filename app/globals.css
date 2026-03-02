@@ -32,7 +32,7 @@
      is toggled programmatically in future. */
   :root,
   .dark {
-    --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
+    --font-sans: var(--font-raleway), system-ui, -apple-system, sans-serif;
     --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 
     --background: 240 15% 5%;

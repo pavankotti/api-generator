@@ -32,8 +32,9 @@
      is toggled programmatically in future. */
   :root,
   .dark {
-    --font-sans: 'Gilroy', system-ui, -apple-system, sans-serif;
-    --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+    --font-display: "Clash Display", "Space Grotesk", sans-serif;
+    --font-sans: "Satoshi", "Inter", sans-serif;
+    --font-mono: "JetBrains Mono", monospace;
 
     --background: 240 15% 5%;
     --foreground: 220 20% 95%;

@@ -32,8 +32,15 @@ export async function POST(request: NextRequest) {
 
       // 3. Database Operations
       await createTable(realTableName, schema.columns);
-      if (schema.sampleData.length > 0) {
-        await insertData(realTableName, schema.sampleData);
+      if (schema.allData.length > 0) {
+        // Insert in batches to avoid exceeding PostgreSQL's parameter limit,
+        // and run batches concurrently for better throughput on large sheets.
+        const BATCH_SIZE = 500;
+        const batches: Promise<void>[] = [];
+        for (let i = 0; i < schema.allData.length; i += BATCH_SIZE) {
+          batches.push(insertData(realTableName, schema.allData.slice(i, i + BATCH_SIZE)));
+        }
+        await Promise.all(batches);
       }
 
       await saveApiMetadata({

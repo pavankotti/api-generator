@@ -11,6 +11,7 @@ export interface DataSchema {
   tableName: string; // Suggested table name
   columns: ColumnSchema[];
   sampleData: Record<string, any>[];
+  allData: Record<string, any>[];
 }
 
 /**
@@ -126,5 +127,6 @@ export async function parseFile(file: File): Promise<DataSchema> {
     tableName: cleanName,
     columns,
     sampleData,
+    allData: rawData,
   };
 }

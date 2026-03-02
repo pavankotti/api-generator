@@ -17,6 +17,8 @@ import {
   Key,
   Globe,
   Play,
+  FileText,
+  TableIcon,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -76,9 +78,9 @@ function Steps({ stage }: { stage: Stage }) {
       {steps.map((s, i) => (
         <div key={s.key} className="flex items-center">
           <div
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-300 ${
               i === idx
-                ? "bg-primary text-primary-foreground"
+                ? "bg-primary text-primary-foreground shadow-sm"
                 : i < idx
                 ? "bg-primary/20 text-primary"
                 : "bg-muted text-muted-foreground"
@@ -118,6 +120,16 @@ function MethodBadge({ method }: { method: string }) {
       {method}
     </span>
   )
+}
+
+/* ------------------------------------------------------------------ */
+/* Format bytes                                                          */
+/* ------------------------------------------------------------------ */
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
 /* ------------------------------------------------------------------ */
@@ -277,82 +289,121 @@ export default function FileUploader() {
       {/* STAGE 1: UPLOAD                                           */}
       {/* ======================================================== */}
       {stage === "upload" && (
-        <div className="space-y-5">
+        <div className="space-y-4">
           {/* Dropzone */}
           <div
             {...getRootProps()}
-            className={`relative flex flex-col items-center justify-center border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-all duration-200 ${
+            className={`relative flex flex-col items-center justify-center border-2 border-dashed rounded-2xl cursor-pointer transition-all duration-200 overflow-hidden ${
               isDragActive
-                ? "border-primary bg-primary/5 scale-[1.01]"
+                ? "border-primary bg-primary/5 scale-[1.01] shadow-lg"
                 : file
-                ? "border-primary/50 bg-primary/3"
-                : "border-muted-foreground/25 hover:border-primary/40 hover:bg-accent/30"
+                ? "border-primary/60 bg-primary/3"
+                : "border-muted-foreground/20 hover:border-primary/50 hover:bg-accent/20"
             }`}
+            style={{ minHeight: "260px" }}
           >
             <input {...getInputProps()} />
+
+            {/* Background gradient decoration */}
+            <div className="absolute inset-0 pointer-events-none">
+              {(isDragActive || file) && (
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent" />
+              )}
+              <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+            </div>
+
             {file ? (
-              <>
-                <div className="flex items-center justify-center h-14 w-14 rounded-full bg-primary/10 mb-4">
-                  <FileSpreadsheet className="h-7 w-7 text-primary" />
+              <div className="relative flex flex-col items-center gap-3 py-10 px-6 text-center w-full">
+                {/* File icon with type badge */}
+                <div className="relative">
+                  <div className="flex items-center justify-center h-16 w-16 rounded-2xl bg-primary/10 border border-primary/20">
+                    <FileSpreadsheet className="h-8 w-8 text-primary" />
+                  </div>
+                  <span className="absolute -bottom-1 -right-1 text-[9px] font-bold bg-primary text-primary-foreground px-1.5 py-0.5 rounded-md uppercase tracking-wide">
+                    {file.name.split(".").pop()}
+                  </span>
                 </div>
-                <p className="font-semibold text-lg">{file.name}</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {(file.size / 1024).toFixed(1)} KB · Click to change file
-                </p>
+                <div>
+                  <p className="font-semibold text-base">{file.name}</p>
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    {formatBytes(file.size)} · Click to change file
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1.5 rounded-full border border-emerald-200 dark:border-emerald-800">
+                  <CheckIcon className="h-3 w-3" /> File ready to upload
+                </div>
+                {/* Remove button */}
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="absolute top-3 right-3 h-7 w-7 text-muted-foreground hover:text-foreground"
+                  className="absolute top-3 right-3 h-7 w-7 text-muted-foreground hover:text-foreground rounded-lg"
                   onClick={(e) => { e.stopPropagation(); setFile(null) }}
                 >
                   <X className="h-4 w-4" />
                 </Button>
-              </>
+              </div>
             ) : (
-              <>
-                <div className="flex items-center justify-center h-14 w-14 rounded-full bg-muted mb-4">
-                  <UploadCloud className="h-7 w-7 text-muted-foreground" />
+              <div className="flex flex-col items-center gap-4 py-14 px-6 text-center">
+                <div className="relative">
+                  <div className={`flex items-center justify-center h-16 w-16 rounded-2xl border-2 transition-all duration-200 ${
+                    isDragActive ? "bg-primary/15 border-primary scale-110" : "bg-muted/60 border-muted-foreground/20"
+                  }`}>
+                    <UploadCloud className={`h-8 w-8 transition-colors duration-200 ${isDragActive ? "text-primary" : "text-muted-foreground"}`} />
+                  </div>
+                  {/* Floating format badges */}
+                  <div className="absolute -top-2 -right-8 flex flex-col gap-1">
+                    <span className="text-[10px] font-bold font-mono bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 px-1.5 py-0.5 rounded-md shadow-sm">.csv</span>
+                    <span className="text-[10px] font-bold font-mono bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800 px-1.5 py-0.5 rounded-md shadow-sm">.xlsx</span>
+                  </div>
                 </div>
-                <p className="font-semibold text-lg">
-                  {isDragActive ? "Drop your file here" : "Drag & drop your file here"}
-                </p>
-                <p className="text-sm text-muted-foreground mt-1 mb-4">or click to browse</p>
-                <div className="flex gap-2">
-                  <Badge variant="secondary" className="font-mono">.csv</Badge>
-                  <Badge variant="secondary" className="font-mono">.xlsx</Badge>
+                <div>
+                  <p className="font-semibold text-lg">
+                    {isDragActive ? "Drop your file here" : "Drag & drop your file here"}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    or <span className="text-primary font-medium">click to browse</span> your files
+                  </p>
                 </div>
-              </>
+                <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-1.5">
+                    <FileText className="h-3.5 w-3.5" /> CSV files
+                  </div>
+                  <div className="h-3 w-px bg-border" />
+                  <div className="flex items-center gap-1.5">
+                    <TableIcon className="h-3.5 w-3.5" /> Excel spreadsheets
+                  </div>
+                </div>
+              </div>
             )}
           </div>
 
-          {/* Demo key info */}
-          <Card className="bg-muted/30 border-dashed">
-            <CardContent className="pt-4 pb-4">
-              <div className="flex flex-wrap items-center gap-3 text-sm">
-                <span className="font-medium text-muted-foreground">Demo API Key:</span>
-                <div className="flex items-center gap-1 rounded-md border bg-muted px-2.5 py-1 font-mono text-xs">
-                  <span>demo-api-key-123</span>
-                  <CopyBtn text="demo-api-key-123" />
-                </div>
-                <span className="text-muted-foreground text-xs">
-                  · use in <code className="bg-muted border rounded px-1">x-api-key</code> header ·{" "}
-                  <a href="/api/docs" target="_blank" className="underline underline-offset-4 hover:text-primary">
-                    Swagger docs
-                  </a>
-                </span>
+          {/* Info row */}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span className="font-medium">Demo API Key:</span>
+              <div className="flex items-center gap-1 rounded-md border bg-muted px-2.5 py-1 font-mono">
+                <span>demo-api-key-123</span>
+                <CopyBtn text="demo-api-key-123" />
               </div>
-            </CardContent>
-          </Card>
+              <span className="hidden sm:inline">
+                · use in <code className="bg-muted border rounded px-1">x-api-key</code> header ·{" "}
+                <a href="/api/docs" target="_blank" className="underline underline-offset-4 hover:text-primary">
+                  View docs
+                </a>
+              </span>
+            </div>
 
-          <div className="flex justify-end">
             <Button
-              size="lg"
+              size="default"
               onClick={handlePreview}
               disabled={!file || loading}
-              className="gap-2 px-8"
+              className="gap-2 min-w-[140px]"
             >
               {loading ? (
-                <>Parsing…</>
+                <>
+                  <div className="h-4 w-4 rounded-full border-2 border-primary-foreground/30 border-t-primary-foreground animate-spin" />
+                  Parsing…
+                </>
               ) : (
                 <>
                   Preview Data
@@ -391,7 +442,10 @@ export default function FileUploader() {
                 className="gap-1.5 bg-primary"
               >
                 {loading ? (
-                  "Generating…"
+                  <>
+                    <div className="h-3.5 w-3.5 rounded-full border-2 border-primary-foreground/30 border-t-primary-foreground animate-spin" />
+                    Generating…
+                  </>
                 ) : (
                   <>
                     <Zap className="h-3.5 w-3.5" />
@@ -416,7 +470,12 @@ export default function FileUploader() {
               Changes are local — edits will be saved when you generate the API.
             </p>
             <Button onClick={handleGenerate} disabled={loading} className="gap-2">
-              {loading ? "Generating…" : (
+              {loading ? (
+                <>
+                  <div className="h-4 w-4 rounded-full border-2 border-primary-foreground/30 border-t-primary-foreground animate-spin" />
+                  Generating…
+                </>
+              ) : (
                 <>
                   <Sparkles className="h-4 w-4" />
                   Generate API
@@ -495,8 +554,11 @@ export default function FileUploader() {
                     variant="secondary"
                     className="w-full gap-2"
                   >
-                    <Play className="h-4 w-4" />
-                    {testing ? "Testing…" : "Test API (GET /data)"}
+                    {testing ? (
+                      <><div className="h-4 w-4 rounded-full border-2 border-foreground/20 border-t-foreground animate-spin" /> Testing…</>
+                    ) : (
+                      <><Play className="h-4 w-4" /> Test API (GET /data)</>
+                    )}
                   </Button>
                   {testResult && (
                     <div className="rounded-lg border bg-muted/30 overflow-hidden">

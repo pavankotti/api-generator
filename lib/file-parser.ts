@@ -11,6 +11,7 @@ export interface DataSchema {
   tableName: string; // Suggested table name
   columns: ColumnSchema[];
   sampleData: Record<string, any>[];
+  allData: Record<string, any>[];
 }
 
 /**
@@ -89,6 +90,20 @@ function inferSchema(data: Record<string, any>[]): ColumnSchema[] {
 }
 
 /**
+ * Helper: Sanitize a header string into a valid DB identifier.
+ * Trims whitespace, lowercases, replaces runs of non-alphanumeric
+ * characters with a single underscore, and strips leading/trailing underscores.
+ * Throws if the result is empty (e.g. a header that is only special characters).
+ */
+function sanitizeColumnName(name: string): string {
+  const sanitized = name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+  if (!sanitized) {
+    throw new Error(`Column header "${name}" could not be converted to a valid identifier. Headers must contain at least one alphanumeric character.`);
+  }
+  return sanitized;
+}
+
+/**
  * Universal Parser (CSV + Excel) via SheetJS
  */
 export async function parseFile(file: File): Promise<DataSchema> {
@@ -113,8 +128,32 @@ export async function parseFile(file: File): Promise<DataSchema> {
     throw new Error("File is empty or could not be parsed.");
   }
 
-  const columns = inferSchema(rawData);
-  const sampleData = rawData.slice(0, 5);
+  // Sanitize header keys so they are valid DB identifiers (no spaces, hyphens, etc.)
+  // rawData is non-empty at this point (checked above).
+  const originalKeys = Object.keys(rawData[0]);
+  const keyMap: Record<string, string> = {};
+  const usedNames = new Set<string>();
+  for (const key of originalKeys) {
+    let sanitized = sanitizeColumnName(key);
+    // Resolve collisions (e.g. "User ID" and "User-ID" both → "user_id")
+    if (usedNames.has(sanitized)) {
+      let suffix = 2;
+      while (usedNames.has(`${sanitized}_${suffix}`)) suffix++;
+      sanitized = `${sanitized}_${suffix}`;
+    }
+    usedNames.add(sanitized);
+    keyMap[key] = sanitized;
+  }
+  const sanitizedData = rawData.map((row) => {
+    const sanitizedRow: Record<string, any> = {};
+    for (const key of originalKeys) {
+      sanitizedRow[keyMap[key]] = row[key];
+    }
+    return sanitizedRow;
+  });
+
+  const columns = inferSchema(sanitizedData);
+  const sampleData = sanitizedData.slice(0, 5);
   
   // Clean up table name (remove extension, special chars)
   const cleanName = file.name.split(".")[0]
@@ -126,5 +165,6 @@ export async function parseFile(file: File): Promise<DataSchema> {
     tableName: cleanName,
     columns,
     sampleData,
+    allData: sanitizedData,
   };
 }

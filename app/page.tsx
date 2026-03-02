@@ -19,29 +19,29 @@ const FEATURES = [
     icon: Clock,
     title: "30-Second Setup",
     desc: "From file upload to live API endpoint in under a minute — no config, no friction.",
-    glow: "rgba(6,182,212,0.15)",
-    border: "rgba(6,182,212,0.28)",
+    glow: "rgba(163,184,176,0.12)",
+    border: "rgba(163,184,176,0.22)",
   },
   {
     icon: Shield,
     title: "API Key Auth",
     desc: "Separate admin and read-only keys generated automatically for every API.",
-    glow: "rgba(59,130,246,0.15)",
-    border: "rgba(59,130,246,0.25)",
+    glow: "rgba(74,85,80,0.18)",
+    border: "rgba(74,85,80,0.28)",
   },
   {
     icon: Database,
     title: "Auto Schema",
     desc: "Column types (text, number, date, boolean) are inferred automatically from your data.",
-    glow: "rgba(20,184,166,0.13)",
-    border: "rgba(20,184,166,0.24)",
+    glow: "rgba(163,184,176,0.10)",
+    border: "rgba(163,184,176,0.20)",
   },
   {
     icon: Code2,
     title: "Full CRUD",
     desc: "GET, POST, PUT, DELETE — all REST endpoints ready, with filtering and pagination.",
-    glow: "rgba(14,165,233,0.14)",
-    border: "rgba(14,165,233,0.25)",
+    glow: "rgba(74,85,80,0.15)",
+    border: "rgba(74,85,80,0.25)",
   },
 ]
 
@@ -83,21 +83,21 @@ export default function Home() {
   return (
     <div
       className="min-h-screen text-white antialiased"
-      style={{ background: "#080a12" }}
+      style={{ background: "#09090b" }}
     >
       {/* ─── Background orbs ─────────────────────────────── */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
         <div
           className="absolute -top-40 -left-40 w-[700px] h-[700px] rounded-full blur-[120px] opacity-25"
-          style={{ background: "radial-gradient(circle, #06b6d4 0%, transparent 70%)" }}
+          style={{ background: "radial-gradient(circle, #A3B8B0 0%, transparent 70%)" }}
         />
         <div
           className="absolute top-1/3 -right-60 w-[600px] h-[600px] rounded-full blur-[100px] opacity-20"
-          style={{ background: "radial-gradient(circle, #0ea5e9 0%, transparent 70%)" }}
+          style={{ background: "radial-gradient(circle, #4A5550 0%, transparent 70%)" }}
         />
         <div
           className="absolute bottom-0 left-1/3 w-[500px] h-[500px] rounded-full blur-[120px] opacity-10"
-          style={{ background: "radial-gradient(circle, #22d3ee 0%, transparent 70%)" }}
+          style={{ background: "radial-gradient(circle, #A3B8B0 0%, transparent 70%)" }}
         />
         {/* Dot grid */}
         <div className="absolute inset-0 dot-grid opacity-40" />
@@ -106,14 +106,14 @@ export default function Home() {
       {/* ─── Navbar ──────────────────────────────────────── */}
       <header
         className="sticky top-0 z-50 border-b"
-        style={{ background: "rgba(8,10,18,0.8)", borderColor: "rgba(255,255,255,0.07)", backdropFilter: "blur(20px)" }}
+        style={{ background: "rgba(9,9,11,0.8)", borderColor: "rgba(255,255,255,0.07)", backdropFilter: "blur(20px)" }}
       >
         <div className="max-w-6xl mx-auto px-5 sm:px-8 h-14 flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-2.5">
             <div
               className="flex h-8 w-8 items-center justify-center rounded-xl"
-              style={{ background: "linear-gradient(135deg, #0891b2, #3b82f6)" }}
+              style={{ background: "linear-gradient(135deg, #4A5550, #A3B8B0)" }}
             >
               <Zap className="h-4 w-4 text-white" />
             </div>
@@ -139,7 +139,7 @@ export default function Home() {
             <a
               href="#upload"
               className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-lg transition-all"
-              style={{ background: "linear-gradient(135deg, #0891b2, #0e7490)", boxShadow: "0 0 20px rgba(8,145,178,0.35)" }}
+              style={{ background: "linear-gradient(135deg, #4A5550, #A3B8B0)", boxShadow: "0 0 20px rgba(163,184,176,0.25)" }}
             >
               Get Started <ArrowRight className="h-3.5 w-3.5" />
             </a>
@@ -153,9 +153,9 @@ export default function Home() {
           {/* Badge */}
           <div
             className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold mb-8"
-            style={{ background: "rgba(8,145,178,0.15)", border: "1px solid rgba(6,182,212,0.3)", color: "#22d3ee" }}
+            style={{ background: "rgba(163,184,176,0.12)", border: "1px solid rgba(163,184,176,0.25)", color: "#A3B8B0" }}
           >
-            <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
+            <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ background: "#A3B8B0" }} />
             Instant REST API from any spreadsheet
           </div>
 
@@ -165,7 +165,7 @@ export default function Home() {
             <br />
             <span
               className="text-gradient"
-              style={{ backgroundImage: "linear-gradient(135deg, #22d3ee 0%, #38bdf8 60%, #0ea5e9 100%)" }}
+              style={{ backgroundImage: "linear-gradient(135deg, #A3B8B0 0%, #c8d8d2 60%, #A3B8B0 100%)" }}
             >
               now a live API.
             </span>
@@ -183,8 +183,8 @@ export default function Home() {
               href="#upload"
               className="inline-flex items-center gap-2 text-sm font-bold px-7 py-3.5 rounded-xl transition-all hover:scale-105"
               style={{
-                background: "linear-gradient(135deg, #0891b2, #0e7490)",
-                boxShadow: "0 0 30px rgba(8,145,178,0.4), 0 0 60px rgba(8,145,178,0.15)",
+                background: "linear-gradient(135deg, #4A5550, #A3B8B0)",
+                boxShadow: "0 0 30px rgba(163,184,176,0.3), 0 0 60px rgba(163,184,176,0.1)",
               }}
             >
               Start for free <ArrowRight className="h-4 w-4" />
@@ -203,7 +203,7 @@ export default function Home() {
           <div className="flex items-center justify-center gap-6 flex-wrap text-xs text-white/35">
             {["No credit card", "Works with .csv & .xlsx", "API keys included"].map((t) => (
               <span key={t} className="flex items-center gap-1.5">
-                <CheckCircle2 className="h-3.5 w-3.5 text-cyan-400" />
+                <CheckCircle2 className="h-3.5 w-3.5" style={{ color: "#A3B8B0" }} />
                 {t}
               </span>
             ))}
@@ -222,7 +222,7 @@ export default function Home() {
               <div key={label}>
                 <p
                   className="text-3xl font-black tracking-tight text-gradient"
-                  style={{ backgroundImage: "linear-gradient(135deg, #22d3ee, #60a5fa)" }}
+                  style={{ backgroundImage: "linear-gradient(135deg, #A3B8B0, #c8d8d2)" }}
                 >
                   {value}
                 </p>
@@ -240,7 +240,7 @@ export default function Home() {
           <div className="text-center mb-10">
             <p
               className="inline-block text-xs font-bold uppercase tracking-[0.15em] px-3 py-1 rounded-full mb-4"
-              style={{ color: "#22d3ee", background: "rgba(8,145,178,0.12)", border: "1px solid rgba(6,182,212,0.2)" }}
+              style={{ color: "#A3B8B0", background: "rgba(163,184,176,0.1)", border: "1px solid rgba(163,184,176,0.2)" }}
             >
               Upload & Generate
             </p>
@@ -257,7 +257,7 @@ export default function Home() {
               background: "rgba(255,255,255,0.03)",
               border: "1px solid rgba(255,255,255,0.08)",
               backdropFilter: "blur(20px)",
-              boxShadow: "0 0 60px rgba(8,145,178,0.08), inset 0 1px 0 rgba(255,255,255,0.06)",
+              boxShadow: "0 0 60px rgba(163,184,176,0.06), inset 0 1px 0 rgba(255,255,255,0.06)",
             }}
           >
             <FileUploader />
@@ -271,7 +271,7 @@ export default function Home() {
           <div className="text-center mb-12">
             <p
               className="inline-block text-xs font-bold uppercase tracking-[0.15em] px-3 py-1 rounded-full mb-4"
-              style={{ color: "#22d3ee", background: "rgba(6,182,212,0.1)", border: "1px solid rgba(6,182,212,0.2)" }}
+              style={{ color: "#A3B8B0", background: "rgba(163,184,176,0.08)", border: "1px solid rgba(163,184,176,0.18)" }}
             >
               Features
             </p>
@@ -314,7 +314,7 @@ export default function Home() {
           <div className="text-center mb-12">
             <p
               className="inline-block text-xs font-bold uppercase tracking-[0.15em] px-3 py-1 rounded-full mb-4"
-              style={{ color: "#22d3ee", background: "rgba(6,182,212,0.1)", border: "1px solid rgba(6,182,212,0.2)" }}
+              style={{ color: "#A3B8B0", background: "rgba(163,184,176,0.08)", border: "1px solid rgba(163,184,176,0.18)" }}
             >
               Who is this for?
             </p>
@@ -336,11 +336,11 @@ export default function Home() {
                 <div className="flex items-center gap-3">
                   <div
                     className="flex h-9 w-9 items-center justify-center rounded-xl shrink-0"
-                    style={{ background: "rgba(6,182,212,0.15)", border: "1px solid rgba(6,182,212,0.25)" }}
+                    style={{ background: "rgba(163,184,176,0.12)", border: "1px solid rgba(163,184,176,0.22)" }}
                   >
-                    <Icon className="h-4 w-4 text-cyan-400" />
+                    <Icon className="h-4 w-4" style={{ color: "#A3B8B0" }} />
                   </div>
-                  <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-cyan-400/70">{label}</span>
+                  <span className="text-[10px] font-bold uppercase tracking-[0.12em]" style={{ color: "rgba(163,184,176,0.7)" }}>{label}</span>
                 </div>
                 <p className="font-semibold text-sm text-white leading-snug">{headline}</p>
                 <p className="text-xs text-white/40 leading-relaxed">{body}</p>
@@ -356,15 +356,15 @@ export default function Home() {
           <div
             className="rounded-3xl p-10 sm:p-14 relative overflow-hidden"
             style={{
-              background: "linear-gradient(135deg, rgba(8,145,178,0.2), rgba(14,116,144,0.15))",
-              border: "1px solid rgba(6,182,212,0.25)",
-              boxShadow: "0 0 80px rgba(8,145,178,0.12)",
+              background: "linear-gradient(135deg, rgba(163,184,176,0.12), rgba(74,85,80,0.12))",
+              border: "1px solid rgba(163,184,176,0.2)",
+              boxShadow: "0 0 80px rgba(163,184,176,0.08)",
             }}
           >
             {/* Glow inside card */}
             <div
               className="absolute inset-0 rounded-3xl pointer-events-none"
-              style={{ background: "radial-gradient(circle at 50% 0%, rgba(8,145,178,0.2) 0%, transparent 60%)" }}
+              style={{ background: "radial-gradient(circle at 50% 0%, rgba(163,184,176,0.15) 0%, transparent 60%)" }}
             />
             <h2 className="text-3xl sm:text-4xl font-black tracking-tighter text-white relative mb-4">
               Ready to build your API?
@@ -376,8 +376,8 @@ export default function Home() {
               href="#upload"
               className="inline-flex items-center gap-2 text-sm font-bold px-8 py-3.5 rounded-xl relative transition-all hover:scale-105"
               style={{
-                background: "linear-gradient(135deg, #0891b2, #0e7490)",
-                boxShadow: "0 0 30px rgba(8,145,178,0.5)",
+                background: "linear-gradient(135deg, #4A5550, #A3B8B0)",
+                boxShadow: "0 0 30px rgba(163,184,176,0.35)",
               }}
             >
               Get Started Free <ArrowRight className="h-4 w-4" />
@@ -395,7 +395,7 @@ export default function Home() {
           <div className="flex items-center gap-2">
             <div
               className="flex h-5 w-5 items-center justify-center rounded"
-              style={{ background: "linear-gradient(135deg, #0891b2, #3b82f6)" }}
+              style={{ background: "linear-gradient(135deg, #4A5550, #A3B8B0)" }}
             >
               <Zap className="h-3 w-3 text-white" />
             </div>

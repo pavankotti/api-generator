@@ -32,7 +32,7 @@
      is toggled programmatically in future. */
   :root,
   .dark {
-    --font-sans: var(--font-space-grotesk), system-ui, -apple-system, sans-serif;
+    --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
     --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 
     --background: 240 15% 5%;
@@ -44,25 +44,25 @@
     --popover: 240 12% 7%;
     --popover-foreground: 220 20% 95%;
 
-    /* cyan primary – matches DeFi reference palette */
-    --primary: 192 91% 36%;
+    /* sage/mint primary – matches the design color palette */
+    --primary: 160 14% 70%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 240 10% 13%;
     --secondary-foreground: 220 20% 90%;
 
     --muted: 240 10% 13%;
-    --muted-foreground: 240 10% 55%;
+    --muted-foreground: 240 5% 65%;
 
-    --accent: 192 80% 15%;
+    --accent: 160 10% 20%;
     --accent-foreground: 220 20% 95%;
 
     --destructive: 0 62% 40%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 240 10% 14%;
-    --input: 240 10% 14%;
-    --ring: 192 91% 36%;
+    --border: 240 5% 14%;
+    --input: 240 5% 14%;
+    --ring: 160 14% 70%;
 
     --radius: 0.75rem;
   }
@@ -77,19 +77,16 @@
   }
   body {
     @apply bg-background text-foreground;
-    background-color: #080a12;
+    background-color: #09090b;
   }
 }
 
 /* Radial glow helper */
-.glow-cyan {
-  background: radial-gradient(circle, rgba(6, 182, 212, 0.18) 0%, transparent 70%);
-}
-.glow-blue {
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.14) 0%, transparent 70%);
+.glow-sage {
+  background: radial-gradient(circle, rgba(163, 184, 176, 0.18) 0%, transparent 70%);
 }
 .glow-teal {
-  background: radial-gradient(circle, rgba(20, 184, 166, 0.14) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(74, 85, 80, 0.25) 0%, transparent 70%);
 }
 
 /* Dot-grid background */

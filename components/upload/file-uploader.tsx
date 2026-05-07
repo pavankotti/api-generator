@@ -34,6 +34,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import DataTableEditor from "@/components/upload/data-table-editor"
+import ExportProject from "@/components/upload/export-project"
 import type { ColumnSchema } from "@/lib/file-parser"
 
 /* ------------------------------------------------------------------ */
@@ -56,6 +57,8 @@ interface GeneratedApi {
   adminKey: string
   readKey: string
   globalApiUrl: string
+  columns: ColumnSchema[]
+  rows: Record<string, any>[]
   endpoints: { method: string; path: string; description: string }[]
   schema: any
 }
@@ -203,6 +206,14 @@ export default function FileUploader() {
       fd.append("file", file)
       const res = await fetch("/api/preview", { method: "POST", body: fd })
       const data = await res.json()
+      
+      // Circuit Breaker: Handle row limit error with friendly message
+      if (res.status === 413 && data.errorCode === "ROW_LIMIT_EXCEEDED") {
+        throw new Error(
+          `File Too Large: Your file contains ${data.rowCount} rows, but the maximum allowed is 150 rows. Please split your data into smaller files and re-upload.`
+        )
+      }
+      
       if (!res.ok) throw new Error(data.message)
       setPreview(data)
       setStage("preview")
@@ -230,7 +241,11 @@ export default function FileUploader() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.message)
-      setGeneratedApi(data.api)
+      setGeneratedApi({
+        ...data.api,
+        columns: preview.columns,
+        rows: preview.rows,
+      })
       setStage("result")
     } catch (e: any) {
       setError(e.message ?? "Failed to generate API")
@@ -662,6 +677,16 @@ export default function FileUploader() {
               </Card>
             </TabsContent>
           </Tabs>
+
+          {/* Export Project Card */}
+          <ExportProject
+            api={{
+              tableName: generatedApi.tableName,
+              columns: generatedApi.columns,
+              rows: generatedApi.rows,
+              fileName: generatedApi.fileName,
+            }}
+          />
         </div>
       )}
     </div>

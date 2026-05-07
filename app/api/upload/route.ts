@@ -110,6 +110,20 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error("Upload error:", error);
+    
+    // Circuit Breaker: Return 413 Payload Too Large for row limit breach
+    if (error instanceof Error && (error as any).code === "ROW_LIMIT_EXCEEDED") {
+      return NextResponse.json(
+        { 
+          success: false, 
+          message: error.message,
+          errorCode: "ROW_LIMIT_EXCEEDED",
+          rowCount: (error as any).rowCount,
+        },
+        { status: 413 }
+      );
+    }
+    
     return NextResponse.json(
       { success: false, message: error instanceof Error ? error.message : "Failed" },
       { status: 500 }

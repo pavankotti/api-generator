@@ -104,6 +104,11 @@ function sanitizeColumnName(name: string): string {
 }
 
 /**
+ * Circuit Breaker: Enforce row limit before any processing
+ */
+const ROW_LIMIT = 150;
+
+/**
  * Universal Parser (CSV + Excel) via SheetJS
  */
 export async function parseFile(file: File): Promise<DataSchema> {
@@ -126,6 +131,16 @@ export async function parseFile(file: File): Promise<DataSchema> {
 
   if (rawData.length === 0) {
     throw new Error("File is empty or could not be parsed.");
+  }
+
+  // Circuit Breaker: Validate row count BEFORE any database operations
+  if (rawData.length > ROW_LIMIT) {
+    const error = new Error(
+      `File contains ${rawData.length} rows, exceeding the maximum limit of ${ROW_LIMIT} rows. Processing halted to prevent database overload.`
+    );
+    (error as any).code = "ROW_LIMIT_EXCEEDED";
+    (error as any).rowCount = rawData.length;
+    throw error;
   }
 
   // Sanitize header keys so they are valid DB identifiers (no spaces, hyphens, etc.)

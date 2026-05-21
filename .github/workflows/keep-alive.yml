@@ -7,6 +7,7 @@ on:
 jobs:
   ping:
     runs-on: ubuntu-latest
+    environment: ping
     steps:
       - uses: actions/checkout@v3
       - name: Install dependencies

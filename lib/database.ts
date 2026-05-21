@@ -37,22 +37,38 @@ function pgType(type: string) {
 
 /* ---------------- schema ---------------- */
 
-// In lib/database.ts
+export interface RelationshipSchema {
+  fromColumn: string;
+  toTable: string; // The physical table name
+  toColumn: string;
+}
 
-export async function createTable(table: string, columns: ColumnSchema[]) {
+export async function createTable(
+  table: string, 
+  columns: ColumnSchema[], 
+  relationships: RelationshipSchema[] = []
+) {
   const safeTable = validateIdentifier(table);
   
-  // 1. FIX: Filter out system columns to prevent duplicates
-  // We want to use OUR 'id' and 'created_at' definitions, not the file's.
   const systemColumns = ["id", "created_at"];
   const userColumns = columns.filter(c => !systemColumns.includes(c.name.toLowerCase()));
 
   // Create column definitions
   const cols = userColumns
-    .map((c) => `${validateIdentifier(c.name)} ${pgType(c.type)}`)
+    .map((c) => {
+      const colName = validateIdentifier(c.name);
+      
+      // Check if this column has a relationship
+      const rel = relationships.find(r => r.fromColumn === c.name);
+      if (rel) {
+        // FORCE INTEGER for foreign keys to match SERIAL PRIMARY KEY
+        return `${colName} INTEGER REFERENCES ${validateIdentifier(rel.toTable)}(${validateIdentifier(rel.toColumn)}) ON DELETE SET NULL`;
+      }
+      
+      return `${colName} ${pgType(c.type)}`;
+    })
     .join(",");
 
-  // Create the Data Table
   await pool.query(`
     CREATE TABLE IF NOT EXISTS ${safeTable} (
       id SERIAL PRIMARY KEY,

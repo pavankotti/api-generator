@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install dependencies
-        run: npm install @supabase/supabase-client
+        run: npm install @supabase/supabase-js
       - name: Run ping script
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
